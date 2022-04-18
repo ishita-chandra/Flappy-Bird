@@ -6,7 +6,7 @@ import entities from './entities';
 import Physics from './physics';
 import { GoogleAuthProvider, signInWithPopup, } from 'firebase/auth'
 import { auth, db } from './firebase'
-import { doc, setDoc, collection, getDoc } from 'firebase/firestore'
+import { doc, setDoc, getDoc } from 'firebase/firestore'
 //import '@expo/match-media'
 //import { useMediaQuery } from "react-responsive";
 
@@ -21,8 +21,10 @@ export default function App() {
   const [gameEngine, setGameEngine] = useState(null)
   const [currentPoints, setCurrentPoints] = useState(0)
   const [highest, setHighest] = useState(0)
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
   const [user, setUser] = useState({
-    maxScore:0, username:""
+    maxScore: 0, username: ""
   })
   const fetchGHighest = async () => {
     const docref = doc(db, "GlobalHighest", "public")
@@ -39,6 +41,7 @@ export default function App() {
 
   }
   useEffect(() => {
+    setIsLoggedIn(false);
     fetchGHighest();
     setRunning(false)
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -47,6 +50,7 @@ export default function App() {
         try {
           const result = await getDoc(docref)
           setUser(result.data())
+          setIsLoggedIn(true);
         }
         catch (err) {
           console.log(err)
@@ -65,31 +69,13 @@ export default function App() {
 
   }, [running])
 
-
-  const login = async () => {
-
-    const provider = new GoogleAuthProvider()
-    try {
-      const result = await signInWithPopup(auth, provider)
-
-      const docref = doc(db, "users", result.user.uid)
-      const data = {
-        maxScore: 0,
-        username: result.user.email.split('@')[0]
-      }
-      const res = await setDoc(docref, data, {
-        merge: true,
-      })
-      setUser(data)
-    }
-    catch (err) {
-      console.log(err);
-      alert("Error signing in")
-    }
-  }
   const signOut = () => {
     auth.signOut();
+    setIsLogin(true)
+    setIsLoggedIn(false)
   }
+
+
   const updateGHighest = async () => {
     try {
       const docref = doc(db, "GlobalHighest", "public")
@@ -114,7 +100,6 @@ export default function App() {
       const docref = doc(db, "users", auth.currentUser.uid)
       const data = {
         maxScore: currentPoints,
-
       }
 
       const res = await setDoc(docref, data, {
@@ -138,30 +123,41 @@ export default function App() {
   //   return (<View style={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 20 }}>
   //     <Text style={{ fontWeight: 900, fontSize: 30 }}>Hi Desktop Users 👋, Please switch to mobile or tablet to play this game!</Text></View>)
   // }
-  if(auth.currentUser === null) {
-    return islogin ? <LoginScreen setLogin={setIsLogin} /> : <RegisterScreen setLogin={setIsLogin} />
-    }
+  if (!isLoggedIn) {
+    return islogin ? <LoginScreen setLogin={setIsLogin} setIsLoggedIn={setIsLoggedIn} /> : <RegisterScreen setLogin={setIsLogin} setUser={setUser} setIsLoggedIn={setIsLoggedIn} />
+  }
 
   return (
     <View style={{ flex: 1, alignItems: 'center', position: 'relative' }}>
       <Image source={{ uri: "https://images.unsplash.com/photo-1517210122415-b0c70b2a09bf?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Y2xvdWQlMjBhZXN0aGV0aWN8ZW58MHx8MHx8&w=1000&q=80" }} style={{ position: "absolute", left: 0, bottom: 0, right: 0, top: 0 }} />
       <Text style={{ textAlign: 'center', fontSize: 40, fontWeight: 'bold', margin: 20, zIndex: 150 }}>{currentPoints}</Text>
-      {!running && <TouchableOpacity onPress={login} style={{elevation: 1000, zIndex: 1000, backgroundColor: 'black', paddingHorizontal: 30, paddingVertical: 10 }}>
-         <Text style={{ fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black', paddingHorizontal: 30, paddingVertical: 10, textAlign: 'center' }}>
-        { `Welcome, ${auth.currentUser.displayName}!`}
-      </Text>
+      {!running && <TouchableOpacity style={{ elevation: 1000, zIndex: 1000, backgroundColor: 'black', paddingHorizontal: 30, paddingVertical: 10 }}>
+        <Text style={{ fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black', paddingHorizontal: 30, paddingVertical: 10, textAlign: 'center' }}>
+          {`Welcome, ${user?.name || ""}!`}
+        </Text>
       </TouchableOpacity>}
-{ !running && <Text onPress={signOut} style={{ elevation:2000,position: 'absolute', top: 0, right: 0, zIndex: 200, fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black' }}>
-        Sign Out
-      </Text>}
-       <Text onPress={signOut} style={{ elevation: 1000, zIndex: 0, position: 'absolute', bottom: 0, zIndex: 200, fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black' }}>
+
+
+      {/* EDIT HERE TO */}
+      {/*       
+{!running &&
+    <TouchableOpacity style={{ backgroundColor: 'black',position: 'absolute', top: 10, right: 10, zIndex: 300, elevation: 300 }}
+      onPress={signOut}>
+      <Text style={{ fontWeight: 'bold', color: 'white', fontSize: 30 }}>
+        Signout
+      </Text>
+    </TouchableOpacity> 
+} */}
+      {
+        !running && <Text onPress={signOut} style={{ elevation: 1000, position: 'absolute', bottom: 45, zIndex: 200, fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black' }}>
+          {/*Your Highest Score : {user?.maxScore}<br /> */}
+          Global Highest Score: {highest}
+        </Text>
+      }
+      <Text onPress={signOut} style={{ elevation: 100, zIndex: 100, position: 'absolute', bottom: 5, zIndex: 200, fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black' }}>
         Your Highest Score : {user?.maxScore}
         {/* Global Highest Score: {highest} */}
       </Text>
-      {!running && <Text onPress={signOut} style={{ elevation: 1000, position: 'absolute', bottom: 0, zIndex: 200, fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black' }}>
-        {/*Your Highest Score : {user?.maxScore}<br /> */}
-        Global Highest Score: {highest}
-      </Text>}
       <GameEngine
         ref={(ref) => { setGameEngine(ref) }}
         systems={[Physics]}
@@ -183,22 +179,37 @@ export default function App() {
       >
         <StatusBar style="auto" hidden={true} />
 
+        {!running && <Button title="Sign Out" onPress={signOut} style={{
+          elevation: 2000,
+          zIndex: 300,
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          fontWeight: 'bold',
+          color: 'white',
+          fontSize: 30,
+          backgroundColor: 'black'
+        }} />}
+
       </GameEngine>
 
-      {!running ?
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <TouchableOpacity style={{ backgroundColor: 'black', paddingHorizontal: 30, paddingVertical: 10 }}
-            onPress={() => {
-              setCurrentPoints(0)
-              setRunning(true)
-              gameEngine.swap(entities())
-            }}>
-            <Text style={{ fontWeight: 'bold', color: 'white', fontSize: 30 }}>
-              START GAME
-            </Text>
-          </TouchableOpacity>
+      {
+        !running ?
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <TouchableOpacity style={{ backgroundColor: 'black', paddingHorizontal: 30, paddingVertical: 10 }}
+              onPress={() => {
+                setCurrentPoints(0)
+                setRunning(true)
+                gameEngine.swap(entities())
+              }}>
+              <Text style={{ fontWeight: 'bold', color: 'white', fontSize: 30 }}>
+                START GAME
+              </Text>
+            </TouchableOpacity>
 
-        </View> : null}
-    </View>
+          </View> : null
+      }
+
+    </View >
   );
 }

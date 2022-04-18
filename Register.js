@@ -2,10 +2,11 @@ import { Input, Image, Button } from 'react-native-elements';
 import { StyleSheet, KeyboardAvoidingView, ScrollView, View, Platform } from 'react-native'
 import { Ionicons, FontAwesome5, Zocial, Entypo } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { auth } from './firebase';
+import { auth, db } from './firebase';
+import { doc, setDoc } from 'firebase/firestore'
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 
-const RegisterScreen = ({ setLogin,setUser }) => {
+const RegisterScreen = ({ setLogin, setUser, setIsLoggedIn }) => {
     const [name, setName] = useState('');
     const [photo, setPhoto] = useState('');
     const [email, setEmail] = useState('');
@@ -22,12 +23,20 @@ const RegisterScreen = ({ setLogin,setUser }) => {
             alert("Passwords do not match!");
             return false;
         }
-        createUserWithEmailAndPassword(auth,email, pass)
+        createUserWithEmailAndPassword(auth, email, pass)
             .then(authUser => {
-                authUser.user.updateProfile({
-                    displayName: name,
-                  
-                })
+                const docref = doc(db, "users", authUser.user.uid)
+                const data = {
+                    maxScore: 0,
+                    username: authUser.user.email.split('@')[0],
+                    name: name
+                }
+                setDoc(docref, data, {
+                    merge: true,
+                }).then(() => {
+                    setUser(data)
+                    setIsLoggedIn(true);
+                }).catch(e => alert("Error!"))
             })
             .catch(err => alert(err.message));
 
@@ -36,24 +45,8 @@ const RegisterScreen = ({ setLogin,setUser }) => {
         setEmail('');
         setPass('');
         setRepass('');
-        try{const docref = doc(db, "users", result.user.uid)
-        const data = {
-          maxScore: 0,
-          username: result.user.email.split('@')[0]
-        }
-        const res = await setDoc(docref, data, {
-          merge: true,
-        })
-        setUser(data)
-      }
-      catch (err) {
-        console.log(err);
-        alert("Error signing in")
-      }
-
-
-        setLogin(true)
-
+        setLogin(true);
+        setIsLoggedIn(true);
     };
 
     return (

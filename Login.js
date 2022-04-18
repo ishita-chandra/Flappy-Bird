@@ -6,20 +6,21 @@ import { auth, db } from './firebase'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 
 
-const LoginScreen = ({setLogin}) => {
+const LoginScreen = ({ setLogin, setIsLoggedIn }) => {
     const [email, setEmail] = useState('');
     const [pass, setPass] = useState('');
     const login = () => {
-        if (!(email && pass))
-        {
+        if (!(email && pass)) {
             alert("Fields cannot be empty");
             return false;
         }
 
         signInWithEmailAndPassword(auth, email, pass)
-        .catch(err => alert(err.message));
-     };
-    
+            .catch(err => alert(err.message));
+
+        setIsLoggedIn(true);
+    };
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
