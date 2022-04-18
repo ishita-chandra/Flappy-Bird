@@ -16,19 +16,19 @@ const Bird = props => {
 
         
         <View style={{
-           // borderWidth: 1,
-           borderRadius: 5,
-            //backgroundSize:"contain",
-           // backgroundRepeat: "no-repeat",
-           // backgroundImage: "url(https://upload.wikimedia.org/wikipedia/en/thumb/0/02/Tweety.svg/800px-Tweety.svg.png)",
-           // borderStyle: 'solid',
+           //borderWidth: 1,
+          // borderRadius: 5,
+        //    backgroundSize:"contain",
+        //    backgroundRepeat: "no-repeat",
+          // backgroundImage: "url(https://upload.wikimedia.org/wikipedia/en/thumb/0/02/Tweety.svg/800px-Tweety.svg.png)",
+        //   borderStyle: 'solid',
             position:'relative',
             left: xBody,
             top: yBody,
             width: widthBody,
             height: heightBody
         }}>
-            <Image style={{position:'absolute',inset:0,resizeMode:'scale'}}
+            <Image style={{position:'absolute',left:0,right:0,top:0,bottom:0,resizeMode:'contain'}}
             
             
             source={{uri:'https://upload.wikimedia.org/wikipedia/en/thumb/0/02/Tweety.svg/800px-Tweety.svg.png'}}/>

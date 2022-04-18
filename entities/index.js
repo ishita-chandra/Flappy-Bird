@@ -24,11 +24,11 @@ export default restart => {
 
         Bird: Bird(world, '#e7e995', { x: 50, y: 300 }, { height: 40, width: 40 }),
 
-        ObstacleTop1: Obstacle(world, 'ObstacleTop1', '#594a5b', pipeSizePosA.pipeTop.pos, pipeSizePosA.pipeTop.size),
-        ObstacleBottom1: Obstacle(world, 'ObstacleBottom1', '#7a8be0', pipeSizePosA.pipeBottom.pos, pipeSizePosA.pipeBottom.size),
+        ObstacleTop1: Obstacle(world, 'ObstacleTop1', '#312c31', pipeSizePosA.pipeTop.pos, pipeSizePosA.pipeTop.size),
+        ObstacleBottom1: Obstacle(world, 'ObstacleBottom1', '#4b1a4b', pipeSizePosA.pipeBottom.pos, pipeSizePosA.pipeBottom.size),
 
-        ObstacleTop2: Obstacle(world, 'ObstacleTop2', '#594a5b', pipeSizePosB.pipeTop.pos, pipeSizePosB.pipeTop.size),
-        ObstacleBottom2: Obstacle(world, 'ObstacleBottom2', '#7a8be0', pipeSizePosB.pipeBottom.pos, pipeSizePosB.pipeBottom.size),
+        ObstacleTop2: Obstacle(world, 'ObstacleTop2', '#312c31', pipeSizePosB.pipeTop.pos, pipeSizePosB.pipeTop.size),
+        ObstacleBottom2: Obstacle(world, 'ObstacleBottom2', '#4b1a4b', pipeSizePosB.pipeBottom.pos, pipeSizePosB.pipeBottom.size),
 
         Floor: Floor(world, 'green', { x: windowWidth / 2, y: windowHeight }, { height: 50, width: windowWidth })
     }

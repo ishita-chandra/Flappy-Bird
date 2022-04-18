@@ -52,12 +52,14 @@ export default function App() {
     })
   }, [])
 
-useEffect(()=>{
-  if (!running && auth.currentUser !== null && currentPoints > user.maxScore ) {
-    updateMaxScore();
-  }
+  useEffect(() => {
+    fetchGHighest();
 
-},[running])
+    if (!running && auth.currentUser !== null && currentPoints > user.maxScore) {
+      updateMaxScore();
+    }
+
+  }, [running])
 
 
 
@@ -108,20 +110,20 @@ useEffect(()=>{
   //onsole.log(user)
 
   const updateMaxScore = async () => {
-  console.log("entered")
+    console.log("entered")
 
     try {
       const docref = doc(db, "users", auth.currentUser.uid)
       const data = {
         maxScore: currentPoints,
-        
+
       }
-      
+
       const res = await setDoc(docref, data, {
         merge: true,
       })
       setUser({ ...user, maxScore: currentPoints })
-      currentPoints>highest && updateGHighest()
+      currentPoints > highest && updateGHighest()
     }
     catch (e) {
       console.log(e)
@@ -129,19 +131,19 @@ useEffect(()=>{
     }
   }
 
-  const isTabletOrMobileDevice = useMediaQuery({    
+  const isTabletOrMobileDevice = useMediaQuery({
     maxDeviceWidth: 1000,
     // alternatively...
-    query: "(max-device-width: 1000px)"  
+    query: "(max-device-width: 1000px)"
   });
   if (!isTabletOrMobileDevice) {
-    return (<View style={{flexGrow:1, alignItems: 'center',justifyContent: 'center',padding:20}}>
-       <Text style={{ fontWeight: 900,fontSize:30}}>Hi Desktop Users 👋, Please switch to mobile or tablet to play this game!</Text></View>)
+    return (<View style={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <Text style={{ fontWeight: 900, fontSize: 30 }}>Hi Desktop Users 👋, Please switch to mobile or tablet to play this game!</Text></View>)
   }
-  
+
   return (
-        <View style={{ flex: 1, alignItems: 'center',objectFit:"cover",backgroundImage:"url(https://images.unsplash.com/photo-1517210122415-b0c70b2a09bf?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Y2xvdWQlMjBhZXN0aGV0aWN8ZW58MHx8MHx8&w=1000&q=80)" }}>
-      <Text style={{ textAlign: 'center', fontSize: 40, fontWeight: 'bold', margin: 20 , zIndex:150}}>{currentPoints}</Text>
+    <View style={{ flex: 1, alignItems: 'center', objectFit: "cover", backgroundImage: "url(https://images.unsplash.com/photo-1517210122415-b0c70b2a09bf?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Y2xvdWQlMjBhZXN0aGV0aWN8ZW58MHx8MHx8&w=1000&q=80)" }}>
+      <Text style={{ textAlign: 'center', fontSize: 40, fontWeight: 'bold', margin: 20, zIndex: 150 }}>{currentPoints}</Text>
       {!running && <Text onPress={login} style={{ zIndex: 200, fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black', paddingHorizontal: 30, paddingVertical: 10, textAlign: 'center' }}>
         {auth.currentUser !== null ? `Welcome, ${auth.currentUser.displayName}!` : "Login"}
       </Text>}
@@ -150,9 +152,9 @@ useEffect(()=>{
       </Text>}
       {auth.currentUser !== null && <Text onPress={signOut} style={{ position: 'absolute', bottom: 0, zIndex: 200, fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black' }}>
         Your Highest Score : {user?.maxScore}<br />
-        //Global Highest Score: {highest}
+        {/* Global Highest Score: {highest} */}
       </Text>}
-      { !running  && <Text onPress={signOut} style={{ position: 'absolute', bottom: 0, zIndex: 200, fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black' }}>
+      {!running && <Text onPress={signOut} style={{ position: 'absolute', bottom: 0, zIndex: 200, fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black' }}>
         {/*Your Highest Score : {user?.maxScore}<br /> */}
         Global Highest Score: {highest}
       </Text>}
