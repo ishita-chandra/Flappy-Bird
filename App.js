@@ -1,24 +1,29 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
-import { Text, TouchableOpacity, View, Button } from 'react-native';
+import { Text, TouchableOpacity, View, Button, Image } from 'react-native';
 import { GameEngine } from 'react-native-game-engine';
 import entities from './entities';
 import Physics from './physics';
 import { GoogleAuthProvider, signInWithPopup, } from 'firebase/auth'
 import { auth, db } from './firebase'
 import { doc, setDoc, collection, getDoc } from 'firebase/firestore'
-import '@expo/match-media'
-import { useMediaQuery } from "react-responsive";
+//import '@expo/match-media'
+//import { useMediaQuery } from "react-responsive";
 
+import LoginScreen from './Login';
+import RegisterScreen from './Register';
 
 
 export default function App() {
+  const [islogin, setIsLogin] = useState(true);
 
   const [running, setRunning] = useState(false)
   const [gameEngine, setGameEngine] = useState(null)
   const [currentPoints, setCurrentPoints] = useState(0)
   const [highest, setHighest] = useState(0)
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState({
+    maxScore:0, username:""
+  })
   const fetchGHighest = async () => {
     const docref = doc(db, "GlobalHighest", "public")
     try {
@@ -36,9 +41,7 @@ export default function App() {
   useEffect(() => {
     fetchGHighest();
     setRunning(false)
-
-
-    auth.onAuthStateChanged(async (user) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         const docref = doc(db, "users", user.uid)
         try {
@@ -50,22 +53,17 @@ export default function App() {
         }
       }
     })
+    return unsubscribe
   }, [])
 
   useEffect(() => {
     fetchGHighest();
 
-    if (!running && auth.currentUser !== null && currentPoints > user.maxScore) {
+    if (!running && auth.currentUser !== null && currentPoints > user?.maxScore) {
       updateMaxScore();
     }
 
   }, [running])
-
-
-
-
-
-
 
 
   const login = async () => {
@@ -131,30 +129,36 @@ export default function App() {
     }
   }
 
-  const isTabletOrMobileDevice = useMediaQuery({
-    maxDeviceWidth: 1000,
-    // alternatively...
-    query: "(max-device-width: 1000px)"
-  });
-  if (!isTabletOrMobileDevice) {
-    return (<View style={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <Text style={{ fontWeight: 900, fontSize: 30 }}>Hi Desktop Users 👋, Please switch to mobile or tablet to play this game!</Text></View>)
-  }
+  // const isTabletOrMobileDevice = useMediaQuery({
+  //   maxDeviceWidth: 1000,
+  //   // alternatively...
+  //   query: "(max-device-width: 1000px)"
+  // });
+  // if (!isTabletOrMobileDevice) {
+  //   return (<View style={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+  //     <Text style={{ fontWeight: 900, fontSize: 30 }}>Hi Desktop Users 👋, Please switch to mobile or tablet to play this game!</Text></View>)
+  // }
+  if(auth.currentUser === null) {
+    return islogin ? <LoginScreen setLogin={setIsLogin} /> : <RegisterScreen setLogin={setIsLogin} />
+    }
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', objectFit: "cover", backgroundImage: "url(https://images.unsplash.com/photo-1517210122415-b0c70b2a09bf?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Y2xvdWQlMjBhZXN0aGV0aWN8ZW58MHx8MHx8&w=1000&q=80)" }}>
+    <View style={{ flex: 1, alignItems: 'center', position: 'relative' }}>
+      <Image source={{ uri: "https://images.unsplash.com/photo-1517210122415-b0c70b2a09bf?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxzZWFyY2h8NXx8Y2xvdWQlMjBhZXN0aGV0aWN8ZW58MHx8MHx8&w=1000&q=80" }} style={{ position: "absolute", left: 0, bottom: 0, right: 0, top: 0 }} />
       <Text style={{ textAlign: 'center', fontSize: 40, fontWeight: 'bold', margin: 20, zIndex: 150 }}>{currentPoints}</Text>
-      {!running && <Text onPress={login} style={{ zIndex: 200, fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black', paddingHorizontal: 30, paddingVertical: 10, textAlign: 'center' }}>
-        {auth.currentUser !== null ? `Welcome, ${auth.currentUser.displayName}!` : "Login"}
-      </Text>}
-      {auth.currentUser !== null && !running && <Text onPress={signOut} style={{ position: 'absolute', top: 0, right: 0, zIndex: 200, fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black' }}>
+      {!running && <TouchableOpacity onPress={login} style={{elevation: 1000, zIndex: 1000, backgroundColor: 'black', paddingHorizontal: 30, paddingVertical: 10 }}>
+         <Text style={{ fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black', paddingHorizontal: 30, paddingVertical: 10, textAlign: 'center' }}>
+        { `Welcome, ${auth.currentUser.displayName}!`}
+      </Text>
+      </TouchableOpacity>}
+{ !running && <Text onPress={signOut} style={{ elevation:2000,position: 'absolute', top: 0, right: 0, zIndex: 200, fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black' }}>
         Sign Out
       </Text>}
-      {auth.currentUser !== null && <Text onPress={signOut} style={{ position: 'absolute', bottom: 0, zIndex: 200, fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black' }}>
-        Your Highest Score : {user?.maxScore}<br />
+       <Text onPress={signOut} style={{ elevation: 1000, zIndex: 0, position: 'absolute', bottom: 0, zIndex: 200, fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black' }}>
+        Your Highest Score : {user?.maxScore}
         {/* Global Highest Score: {highest} */}
-      </Text>}
-      {!running && <Text onPress={signOut} style={{ position: 'absolute', bottom: 0, zIndex: 200, fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black' }}>
+      </Text>
+      {!running && <Text onPress={signOut} style={{ elevation: 1000, position: 'absolute', bottom: 0, zIndex: 200, fontWeight: 'bold', color: 'white', fontSize: 30, cursor: 'pointer', backgroundColor: 'black' }}>
         {/*Your Highest Score : {user?.maxScore}<br /> */}
         Global Highest Score: {highest}
       </Text>}
