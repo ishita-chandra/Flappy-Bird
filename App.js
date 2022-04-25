@@ -10,8 +10,6 @@ import { doc, setDoc, collection, getDoc } from 'firebase/firestore'
 import '@expo/match-media'
 import { useMediaQuery } from "react-responsive";
 
-
-
 export default function App() {
 
   const [running, setRunning] = useState(false)
